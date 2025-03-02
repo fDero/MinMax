@@ -116,9 +116,7 @@ struct TicTacToeBoard {
                 new_internal[i] = current_player_is_maximizing()
                     ? Square::OCCUPIED_X
                     : Square::OCCUPIED_O;
-                moves.emplace_back(new_internal);
-                moves.back().prev_move = i;
-                moves.back().depth = depth + 1;
+                moves.emplace_back(this->make(i));
             }
         }
         return moves;
@@ -126,6 +124,18 @@ struct TicTacToeBoard {
 
     [[nodiscard]] move_t get_prev_move() const {
         return prev_move;
+    }
+
+    [[nodiscard]] TicTacToeBoard make(move_t move) const {
+        ensure(move >= 0 && move <= 8);
+        auto new_internal = internal;
+        new_internal[move] = current_player_is_maximizing()
+            ? Square::OCCUPIED_X
+            : Square::OCCUPIED_O;
+        TicTacToeBoard new_board(new_internal);
+        new_board.prev_move = move;
+        new_board.depth = depth + 1;
+        return new_board;
     }
 
     [[nodiscard]] bool current_player_is_maximizing() const {
@@ -165,13 +175,27 @@ using TicTacToeEngine = MinMaxEngine<TicTacToeBoard::score_t, TicTacToeBoard>;
 
 int main(int argc, [[maybe_unused]] char** argv) {
     assert (argc == 1);
-    std::cout << "AUTOMATIC MODE" << std::endl;
+    std::cout << "==========INTERACTIVE MODE==========" << std::endl;
 
     TicTacToeBoard board;
     TicTacToeEngine engine;
 
     while (!board.children().empty()) {
-        board = engine.find_best_move(10, board);
-        std::cout << board;
+        try {
+            std::cout << board << std::endl;
+            auto board_after_best_move = engine.find_best_move(10, board);
+            std::cout << "Best move: " << board_after_best_move.get_prev_move() << std::endl;
+            std::cout << "Select a move [0-8]: ";
+            std::string move_str;
+            std::getline(std::cin, move_str);
+            auto move = std::stoi(move_str);
+            board = board.make(move);
+        }
+        catch (...) {
+            std::cout << "[!!] Error, please try again" << std::endl << std::endl;;
+        }
     }
+
+    std::cout << board << std::endl;
+    std::cout << "Game ended" << std::endl;
 }
