@@ -1,0 +1,34 @@
+
+# Ignore IDE-related configurations
+.vscode
+.idea
+
+# Place files that you want to ignore here
+hidden
+
+# Ignore output files, executables and libraries
+*.elf
+*.exe
+*.out
+*.o
+*.a
+*.so
+*.dll
+*.lib
+*.s
+*.asm
+
+# Ignore build-related files
+*cmake*
+cmake-build-debug/*
+dependencies/*
+build
+out/*
+lib/*
+bin/*
+
+# Ignore unwanted distribution-related files
+*.snap
+*.msi
+*.nix
+result
