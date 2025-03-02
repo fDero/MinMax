@@ -15,6 +15,5 @@ template<typename GB>
 concept game_board = requires (const GB& board) {
     { board.evaluate()                       } -> game_score;
     { board.children()                       } -> std::same_as<std::vector<GB>>;
-    { board == board                         } -> std::same_as<bool>;
     { board.current_player_is_maximizing()   } -> std::same_as<bool>;
 };

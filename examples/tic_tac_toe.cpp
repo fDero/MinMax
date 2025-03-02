@@ -48,8 +48,8 @@ struct TicTacToeBoard {
     TicTacToeBoard& operator=(const TicTacToeBoard& other) = default;
     TicTacToeBoard& operator=(TicTacToeBoard&& other) = default;
 
-    bool operator==(const TicTacToeBoard& other) const noexcept = default;
-    bool operator!=(const TicTacToeBoard& other) const noexcept = default;
+    bool operator==(const TicTacToeBoard& other) const noexcept = delete;
+    bool operator!=(const TicTacToeBoard& other) const noexcept = delete;
 
     static void ensure(bool condition) {
         if (!condition) {
@@ -192,7 +192,7 @@ int main(int argc, [[maybe_unused]] char** argv) {
             board = board.make(move);
         }
         catch (...) {
-            std::cout << "[!!] Error, please try again" << std::endl << std::endl;;
+            std::cout << "[!!] Error, please try again" << std::endl << std::endl;
         }
     }
 
