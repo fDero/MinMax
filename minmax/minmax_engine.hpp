@@ -9,8 +9,9 @@
 #include <utility>
 
 #include "game_board.hpp"
+#include "game_score.h"
 
-template <std::totally_ordered Score, game_board Board>
+template <game_score Score, game_board Board>
 struct MinMaxEngine {
 
     [[nodiscard]] Board find_best_move(size_t max_depth, const Board& board) const {
@@ -21,8 +22,8 @@ struct MinMaxEngine {
         }
         size_t best_move_index = 0;
         Score best_score_so_far = (current_player_is_maximizing)
-            ? std::numeric_limits<Score>::min()
-            : std::numeric_limits<Score>::max();
+            ? inf_limit<Score>()
+            : sup_limit<Score>();
         for (size_t current_move_index = 0; current_move_index < children.size(); current_move_index++) {
             const auto& child = children[current_move_index];
             Score new_score = (board.current_player_is_maximizing())
@@ -37,8 +38,8 @@ struct MinMaxEngine {
     }
 
     struct State {
-        Score global_maximum = std::numeric_limits<Score>::min(); // alpha
-        Score global_minimum = std::numeric_limits<Score>::max(); // beta
+        Score global_maximum = inf_limit<Score>(); // alpha
+        Score global_minimum = sup_limit<Score>(); // beta
     };
 
     [[nodiscard]] Score maximizing_score(size_t max_depth, const Board& board, State state) const {
@@ -46,7 +47,7 @@ struct MinMaxEngine {
         if (max_depth-- == 0 || children.empty()) {
             return board.evaluate();
         }
-        Score local_maximum = std::numeric_limits<Score>::min();
+        Score local_maximum = inf_limit<Score>();
         for (const Board& child : children) {
             local_maximum = std::max(local_maximum, minimizing_score(max_depth, child, state));
             state.global_maximum = std::max(local_maximum, state.global_maximum);
@@ -62,7 +63,7 @@ struct MinMaxEngine {
         if (max_depth-- == 0 || children.empty()) {
             return board.evaluate();
         }
-        Score local_minimum = std::numeric_limits<Score>::max();
+        Score local_minimum = sup_limit<Score>();
         for (const Board& child : children) {
             local_minimum = std::min(local_minimum, maximizing_score(max_depth, child, state));
             state.global_minimum = std::min(local_minimum, state.global_minimum);

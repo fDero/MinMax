@@ -32,6 +32,7 @@ file(GLOB_RECURSE TIC_TAC_TOE_SRC ${CMAKE_SOURCE_DIR}/examples/tic_tac_toe.cpp)
 add_executable(
   ${TIC_TAC_TOE_DEMO}
   ${TIC_TAC_TOE_SRC}
+        minmax/game_score.h
 )
 
 target_compile_options(
