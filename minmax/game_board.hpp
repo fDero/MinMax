@@ -10,7 +10,7 @@
 #include <vector>
 
 template<typename GB, typename Move>
-concept game_board = requires (const GB& board, const Move& move, const GB& mut) {
+concept game_board = requires (const GB& board, const Move& move) {
     { board.evaluate()     } -> std::totally_ordered;
     { board.children()     } -> std::same_as<std::vector<Move>>;
     { board.make(move)     } -> std::convertible_to<GB>;
