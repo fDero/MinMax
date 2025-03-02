@@ -5,87 +5,71 @@
 
 #pragma once
 
-#include <optional>
-#include <memory>
-#include <stdexcept>
-#include <cstdint>
 #include <vector>
-#include <random>
-#include <iostream>
+#include <utility>
 
 #include "game_board.hpp"
-#include "minmax_node.hpp"
 
-template <typename Move, game_board<Move> Board>
-class MinMaxEngine {
-    public:
-        MinMaxEngine(Board board, size_t max_depth) : root(board) {
-            root.make_children(max_depth);
-            maximizing_player = board.maximizing();
-            best_move = std::nullopt;
+template <std::totally_ordered Score, game_board Board>
+struct MinMaxEngine {
+
+    [[nodiscard]] Board find_best_move(size_t max_depth, const Board& board) const {
+        auto children = board.children();
+        bool current_player_is_maximizing = board.current_player_is_maximizing();
+        if (max_depth == 0 || children.empty()) {
+            throw std::runtime_error("No moves found");
         }
-
-        [[nodiscard]] Move peek_best_move() const {
-            if (best_move.has_value()) {
-                return best_move.value();
+        size_t best_move_index = 0;
+        Score best_score_so_far = (current_player_is_maximizing)
+            ? std::numeric_limits<Score>::min()
+            : std::numeric_limits<Score>::max();
+        for (size_t current_move_index = 0; current_move_index < children.size(); current_move_index++) {
+            const auto& child = children[current_move_index];
+            Score new_score = (board.current_player_is_maximizing())
+                ? minimizing_score(max_depth, child, State())
+                : maximizing_score(max_depth, child, State());
+            if ((new_score > best_score_so_far) == current_player_is_maximizing) {
+                best_score_so_far = new_score;
+                best_move_index = current_move_index;
             }
-            if (root.children.size() == 0) {
-                throw std::runtime_error("No moves available");
+        }
+        return children[best_move_index];
+    }
+
+    struct State {
+        Score global_maximum = std::numeric_limits<Score>::min(); // alpha
+        Score global_minimum = std::numeric_limits<Score>::max(); // beta
+    };
+
+    [[nodiscard]] Score maximizing_score(size_t max_depth, const Board& board, State state) const {
+        auto children = board.children();
+        if (max_depth-- == 0 || children.empty()) {
+            return board.evaluate();
+        }
+        Score local_maximum = std::numeric_limits<Score>::min();
+        for (const Board& child : children) {
+            local_maximum = std::max(local_maximum, minimizing_score(max_depth, child, state));
+            state.global_maximum = std::max(local_maximum, state.global_maximum);
+            if (state.global_minimum <= state.global_maximum) {
+                break;
             }
-            size_t index = 0;
-            auto score = root.children[0].score(maximizing_player);
-            for (size_t i = 1; i < root.children.size(); i++) {
-                auto new_score = root.children[i].score(maximizing_player);
-                if ((new_score > score) == (maximizing_player)) {
-                    score = new_score;
-                    index = i;
-                }
+        }
+        return local_maximum;
+    }
+
+    [[nodiscard]] Score minimizing_score(size_t max_depth, const Board& board, State state) const {
+        auto children = board.children();
+        if (max_depth-- == 0 || children.empty()) {
+            return board.evaluate();
+        }
+        Score local_minimum = std::numeric_limits<Score>::max();
+        for (const Board& child : children) {
+            local_minimum = std::min(local_minimum, maximizing_score(max_depth, child, state));
+            state.global_minimum = std::min(local_minimum, state.global_minimum);
+            if (state.global_minimum <= state.global_maximum) {
+                break;
             }
-            return root.children[index].board.last_move();
         }
-
-        void update(size_t max_depth) {
-            root.refresh_children(max_depth);
-        }
-
-        Move do_best_move() {
-            best_move = peek_best_move();
-            assert (best_move.has_value());
-            return do_move(best_move.value());
-        }
-
-        Move do_random_move() {
-            if (root.board.children().empty()) {
-                throw std::runtime_error("No moves available");
-            }
-            static auto random_generator = std::ranlux24(std::random_device{}());
-            auto moves = root.board.children();
-            auto dist = std::uniform_int_distribution<int>(0, moves.size() - 1);
-            Move random_move = moves[dist(random_generator)];
-            return do_move(random_move);
-        }
-
-        Move do_move(const Move& move) {
-            auto moved_board = root.board.make(move);
-            best_move = std::nullopt;
-
-            std::optional<MinMaxNode<Move, Board>> selected_node;
-
-            for (size_t i = 0; i < root.children.size(); i++) {
-                if (root.children[i].board == moved_board) {
-                    selected_node.emplace(std::move(root.children[i]));
-                    break;
-                }
-            }
-
-            assert(selected_node.has_value());
-            root = selected_node.value();
-            maximizing_player = !maximizing_player;
-            return move;
-        }
-
-    private:
-        bool maximizing_player = true;
-        mutable std::optional<Move> best_move = std::nullopt;
-        MinMaxNode<Move, Board> root;
+        return local_minimum;
+    }
 };

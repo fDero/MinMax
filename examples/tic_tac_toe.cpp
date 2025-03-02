@@ -12,11 +12,13 @@
 #include <numeric>
 
 #include "minmax_engine.hpp"
-
-using TicTacToeMove = int;
-using depth_t = int;
+#include "game_board.hpp"
 
 struct TicTacToeBoard {
+
+    using depth_t = int;
+    using score_t = int;
+    using move_t = int;
 
     enum class Square {
         EMPTY,
@@ -24,10 +26,10 @@ struct TicTacToeBoard {
         OCCUPIED_O
     };
 
-    static const TicTacToeMove INITIAL_MOVE = -1;
+    static const move_t INITIAL_MOVE = -1;
 
     depth_t depth = 0;
-    TicTacToeMove prev_move = INITIAL_MOVE;
+    move_t prev_move = INITIAL_MOVE;
     std::array<Square, 9> internal = {
             Square::EMPTY, Square::EMPTY, Square::EMPTY,
             Square::EMPTY, Square::EMPTY, Square::EMPTY,
@@ -56,7 +58,7 @@ struct TicTacToeBoard {
         }
     }
 
-    [[nodiscard]] int evaluate() const {
+    [[nodiscard]] score_t evaluate() const {
 
         using success_scenario = std::array<size_t, 3>;
 
@@ -93,50 +95,44 @@ struct TicTacToeBoard {
             bool match = cond1 && cond2 && cond3;
 
             if (match && internal[index1] == Square::OCCUPIED_X) {
-                return std::numeric_limits<int>::max() - depth;
+                return std::numeric_limits<score_t>::max() - depth;
             }
 
             if (match && internal[index1] == Square::OCCUPIED_O) {
-                return std::numeric_limits<int>::min() + depth;
+                return std::numeric_limits<score_t>::min() + depth;
             }
         }
 
         return 0;
     }
 
-    [[nodiscard]] std::vector<TicTacToeMove> children() const {
+    [[nodiscard]] std::vector<TicTacToeBoard> children() const {
         if (evaluate() != 0) {
             return {};
         }
-        std::vector<TicTacToeMove> moves;
-        for (TicTacToeMove i = 0; i < 9; i++) {
+        std::vector<TicTacToeBoard> moves;
+        for (move_t i = 0; i < 9; i++) {
             if (internal[i] == Square::EMPTY) {
-                moves.push_back(i);
+                auto new_internal = internal;
+                new_internal[i] = current_player_is_maximizing()
+                    ? Square::OCCUPIED_X
+                    : Square::OCCUPIED_O;
+                moves.emplace_back(new_internal);
+                moves.back().prev_move = i;
+                moves.back().depth = depth + 1;
             }
         }
         return moves;
     }
 
-    [[nodiscard]] bool maximizing() const {
+    [[nodiscard]] move_t get_prev_move() const {
+        return prev_move;
+    }
+
+    [[nodiscard]] bool current_player_is_maximizing() const {
         size_t x_count = std::count(internal.begin(), internal.end(), Square::OCCUPIED_X);
         size_t o_count = std::count(internal.begin(), internal.end(), Square::OCCUPIED_O);
         return (x_count <= o_count);
-    }
-
-    [[nodiscard]] TicTacToeBoard make(TicTacToeMove move) const {
-        ensure(internal[move] == Square::EMPTY);
-        Square new_square_value = maximizing()? Square::OCCUPIED_X : Square::OCCUPIED_O;
-        TicTacToeBoard tic_tac_toe_board;
-        tic_tac_toe_board.internal = internal;
-        tic_tac_toe_board.internal[move] = new_square_value;
-        tic_tac_toe_board.prev_move = move;
-        tic_tac_toe_board.depth = depth + 1;
-        return tic_tac_toe_board;
-    }
-
-    [[nodiscard]] TicTacToeMove last_move() const {
-        ensure(prev_move != INITIAL_MOVE);
-        return prev_move;
     }
 
     friend std::ostream& operator<<(std::ostream& stream, const TicTacToeBoard& board) {
@@ -165,29 +161,18 @@ struct TicTacToeBoard {
     }
 };
 
-static_assert(game_board<TicTacToeBoard, TicTacToeMove>);
-using TicTacToeEngine = MinMaxEngine<TicTacToeMove, TicTacToeBoard>;
+static_assert(game_board<TicTacToeBoard>);
+using TicTacToeEngine = MinMaxEngine<TicTacToeBoard::score_t, TicTacToeBoard>;
 
 int main(int argc, [[maybe_unused]] char** argv) {
     assert (argc == 1);
-    std::cout << "INTERACTIVE MODE" << std::endl;
-    auto board = TicTacToeBoard();
+    std::cout << "AUTOMATIC MODE" << std::endl;
+
+    TicTacToeBoard board;
+    TicTacToeEngine engine;
+
     while (!board.children().empty()) {
-        try {
-            std::cout << board << std::endl;
-            TicTacToeEngine engine(board, 10);
-            std::cout << "Best move: " << engine.peek_best_move() << "\n";
-            std::cout << "Select move [0-8]: ";
-            std::string move_str;
-            std::getline(std::cin, move_str);
-            TicTacToeMove move = std::stoi(move_str);
-            engine.do_move(move);
-            board = board.make(move);
-        }
-        catch (...) {
-            std::cout << "Error, please try again\n" << std::endl;
-        }
+        board = engine.find_best_move(10, board);
+        std::cout << board;
     }
-    std::cout << board;
-    std::cout << "Game ended" << std::endl;
 }

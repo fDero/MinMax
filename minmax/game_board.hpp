@@ -9,13 +9,10 @@
 #include <concepts>
 #include <vector>
 
-template<typename GB, typename Move>
-concept game_board = requires (const GB& board, const Move& move) {
-    { board.evaluate()     } -> std::totally_ordered;
-    { board.children()     } -> std::same_as<std::vector<Move>>;
-    { board.make(move)     } -> std::convertible_to<GB>;
-    { GB(board.make(move)) } -> std::same_as<GB>;
-    { board == board       } -> std::same_as<bool>;
-    { board.last_move()    } -> std::same_as<Move>;
-    { board.maximizing()   } -> std::same_as<bool>;
+template<typename GB>
+concept game_board = requires (const GB& board) {
+    { board.evaluate()                       } -> std::totally_ordered;
+    { board.children()                       } -> std::same_as<std::vector<GB>>;
+    { board == board                         } -> std::same_as<bool>;
+    { board.current_player_is_maximizing()   } -> std::same_as<bool>;
 };
