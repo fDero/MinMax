@@ -18,23 +18,26 @@ using depth_t = int;
 
 struct TicTacToeBoard {
 
+    enum class Square {
+        EMPTY,
+        OCCUPIED_X,
+        OCCUPIED_O
+    };
+
     static const TicTacToeMove INITIAL_MOVE = -1;
 
     depth_t depth = 0;
     TicTacToeMove prev_move = INITIAL_MOVE;
-    std::array<char, 9> internal = {
-            '-', '-', '-',
-            '-', '-', '-',
-            '-', '-', '-',
+    std::array<Square, 9> internal = {
+            Square::EMPTY, Square::EMPTY, Square::EMPTY,
+            Square::EMPTY, Square::EMPTY, Square::EMPTY,
+            Square::EMPTY, Square::EMPTY, Square::EMPTY,
     };
 
-    explicit TicTacToeBoard(const std::array<char, 9> internal) : internal(internal) {
-        size_t x_count = std::count(internal.begin(), internal.end(), 'X');
-        size_t o_count = std::count(internal.begin(), internal.end(), 'O');
+    explicit TicTacToeBoard(const std::array<Square, 9> internal) : internal(internal) {
+        size_t x_count = std::count(internal.begin(), internal.end(), Square::OCCUPIED_X);
+        size_t o_count = std::count(internal.begin(), internal.end(), Square::OCCUPIED_O);
         ensure(o_count <= x_count);
-        for (const char c : internal) {
-            ensure(c == '-' || c == 'X' || c == 'O');
-        }
     }
 
     TicTacToeBoard() = default;
@@ -89,11 +92,11 @@ struct TicTacToeBoard {
             bool cond3 = internal[index3] == internal[index1];
             bool match = cond1 && cond2 && cond3;
 
-            if (match && internal[index1] == 'X') {
+            if (match && internal[index1] == Square::OCCUPIED_X) {
                 return std::numeric_limits<int>::max() - depth;
             }
 
-            if (match && internal[index1] == 'O') {
+            if (match && internal[index1] == Square::OCCUPIED_O) {
                 return std::numeric_limits<int>::min() + depth;
             }
         }
@@ -107,7 +110,7 @@ struct TicTacToeBoard {
         }
         std::vector<TicTacToeMove> moves;
         for (TicTacToeMove i = 0; i < 9; i++) {
-            if (internal[i] == '-') {
+            if (internal[i] == Square::EMPTY) {
                 moves.push_back(i);
             }
         }
@@ -115,19 +118,17 @@ struct TicTacToeBoard {
     }
 
     [[nodiscard]] bool maximizing() const {
-        size_t x_count = std::count(internal.begin(), internal.end(), 'X');
-        size_t o_count = std::count(internal.begin(), internal.end(), 'O');
+        size_t x_count = std::count(internal.begin(), internal.end(), Square::OCCUPIED_X);
+        size_t o_count = std::count(internal.begin(), internal.end(), Square::OCCUPIED_O);
         return (x_count <= o_count);
     }
 
     [[nodiscard]] TicTacToeBoard make(TicTacToeMove move) const {
-        ensure(internal[move] == '-');
-        size_t x_count = std::count(internal.begin(), internal.end(), 'X');
-        size_t o_count = std::count(internal.begin(), internal.end(), 'O');
-        char player = (x_count > o_count)? 'O' : 'X';
+        ensure(internal[move] == Square::EMPTY);
+        Square new_square_value = maximizing()? Square::OCCUPIED_X : Square::OCCUPIED_O;
         TicTacToeBoard tic_tac_toe_board;
         tic_tac_toe_board.internal = internal;
-        tic_tac_toe_board.internal[move] = player;
+        tic_tac_toe_board.internal[move] = new_square_value;
         tic_tac_toe_board.prev_move = move;
         tic_tac_toe_board.depth = depth + 1;
         return tic_tac_toe_board;
@@ -148,13 +149,14 @@ struct TicTacToeBoard {
                 "| @ | @ | @ | \n"
                 "+---+---+---+ \n";
 
-        size_t counter = 0;
+        uint8_t counter = 0;
         for (char& c : structure) {
             if (c == '@') {
-                c = (board.internal[counter] != '-')
-                    ? board.internal[counter]
-                    : ' ';
-                counter++;
+                switch (board.internal[counter++]) {
+                    break; case Square::OCCUPIED_X: c = 'X';
+                    break; case Square::OCCUPIED_O: c = 'O';
+                    break; case Square::EMPTY:      c = ' ';
+                }
             }
         }
 
