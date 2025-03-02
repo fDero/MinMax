@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <vector>
+#include <utility>
+
 #include "game_board.hpp"
 
 template <typename Move, game_board<Move> Board>

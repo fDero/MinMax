@@ -19,7 +19,6 @@ hidden
 *.asm
 
 # Ignore build-related files
-*cmake*
 cmake-build-debug/*
 dependencies/*
 build
