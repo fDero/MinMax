@@ -12,7 +12,6 @@
 #include <numeric>
 
 #include "minmax_engine.hpp"
-#include "game_board.hpp"
 
 struct TicTacToeBoard {
 
