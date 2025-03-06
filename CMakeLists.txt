@@ -53,7 +53,6 @@ file(GLOB_RECURSE CONNECT4_SRC ${CMAKE_SOURCE_DIR}/examples/connect4.cpp)
 add_executable(
   ${CONNECT4_DEMO}
   ${CONNECT4_SRC}
-        examples/debug.h
 )
 
 target_compile_options(
