@@ -10,8 +10,8 @@
 #include <stdexcept>
 
 #include "game_board.hpp"
-#include "game_score.h"
-#include "game_compatibility.h"
+#include "game_score.hpp"
+#include "game_compatibility.hpp"
 
 template <game_score Score, game_board Board>
 requires(game_compatibility<Score, Board>)

@@ -9,7 +9,7 @@
 #include <concepts>
 #include <vector>
 
-#include "game_score.h"
+#include "game_score.hpp"
 
 template<typename GB>
 concept game_board = requires (const GB& board) {
