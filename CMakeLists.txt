@@ -32,11 +32,32 @@ file(GLOB_RECURSE TIC_TAC_TOE_SRC ${CMAKE_SOURCE_DIR}/examples/tic_tac_toe.cpp)
 add_executable(
   ${TIC_TAC_TOE_DEMO}
   ${TIC_TAC_TOE_SRC}
-        minmax/game_score.h
 )
 
 target_compile_options(
   ${TIC_TAC_TOE_DEMO}
+  PRIVATE
+  -O3
+  -Wall
+  -Wpedantic
+  -Wfloat-equal
+)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#                                                 CONNECT4                                                 #
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+set(CONNECT4_DEMO connect4)
+file(GLOB_RECURSE CONNECT4_SRC ${CMAKE_SOURCE_DIR}/examples/connect4.cpp)
+
+add_executable(
+  ${CONNECT4_DEMO}
+  ${CONNECT4_SRC}
+        examples/debug.h
+)
+
+target_compile_options(
+  ${CONNECT4_DEMO}
   PRIVATE
   -O3
   -Wall
