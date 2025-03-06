@@ -274,7 +274,7 @@ int main(int argc, [[maybe_unused]] char** argv) {
     while (!board.children().empty()) {
         try {
             std::cout << board << std::endl;
-            auto board_after_best_move = engine.find_best_move(5, board);
+            auto board_after_best_move = engine.find_best_move(10, board);
             std::cout << "Best move: " << board_after_best_move.get_prev_move() << std::endl;
             std::cout << "Select a move [0-5]: ";
             std::string move_str;

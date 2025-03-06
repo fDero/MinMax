@@ -11,8 +11,10 @@
 
 #include "game_board.hpp"
 #include "game_score.h"
+#include "game_compatibility.h"
 
 template <game_score Score, game_board Board>
+requires(game_compatibility<Score, Board>)
 struct MinMaxEngine {
 
     [[nodiscard]] Board find_best_move(size_t max_depth, const Board& board) const {
