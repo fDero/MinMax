@@ -165,8 +165,8 @@ struct Connect4Board {
     [[nodiscard]] score_t evaluate() const {
         switch (compute_game_status()) {
             case GameStatus::DRAW:  return 0;
-            case GameStatus::X_WIN: return std::numeric_limits<score_t>::max();
-            case GameStatus::O_WIN: return std::numeric_limits<score_t>::min();
+            case GameStatus::X_WIN: return std::numeric_limits<score_t>::max() - depth;
+            case GameStatus::O_WIN: return std::numeric_limits<score_t>::min() + depth;
             case GameStatus::INCOMPLETE: break;
         }
 
