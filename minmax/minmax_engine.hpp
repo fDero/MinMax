@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <utility>
+#include <stdexcept>
 
 #include "game_board.hpp"
 #include "game_score.h"

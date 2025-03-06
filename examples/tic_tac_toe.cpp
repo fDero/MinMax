@@ -175,7 +175,10 @@ using TicTacToeEngine = MinMaxEngine<TicTacToeBoard::score_t, TicTacToeBoard>;
 
 int main(int argc, [[maybe_unused]] char** argv) {
     assert (argc == 1);
-    std::cout << "==========INTERACTIVE MODE==========" << std::endl;
+    std::cout << "============INTERACTIVE MODE============" << std::endl;
+    std::cout << "Rules of `TIC-TAC-TOE` can be found at:" << std::endl;
+    std::cout << "https://en.wikipedia.org/wiki/Tic-tac-toe" << std::endl;
+    std::cout << std::endl << std::endl;
 
     TicTacToeBoard board;
     TicTacToeEngine engine;
